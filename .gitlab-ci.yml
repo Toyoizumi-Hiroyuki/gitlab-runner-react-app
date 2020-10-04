@@ -1,0 +1,27 @@
+stages:
+  - build
+  - deploy
+
+build:
+  image: node:alpine
+  stage: build
+  cache:
+    paths:
+      - build/
+  script:
+    - npm install
+    - npm run build --prod
+
+deploy:
+  image: python:alpine
+  stage: deploy
+  cache:
+    paths:
+      - build/
+    policy: pull
+  script:
+    - apk add python3-dev
+    - pip3 install awscli
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws s3 sync build/ s3://20200930-spf-react
